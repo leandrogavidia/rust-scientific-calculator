@@ -1,3 +1,43 @@
+use regex::Regex;
+
+fn create_regex(operator: &str) -> Regex {
+    let regex_structure = format!(r"(\d+)\s?\{operator}\s?(\d+)");
+    let regex = Regex::new(&regex_structure).unwrap();
+    return regex
+}
+
+fn resolve_operation(mut operation: String, operator: &str) -> String {
+    let regex = create_regex(operator);
+    loop {
+        let caps = regex.captures(&operation);
+
+        if caps.is_none() { break }
+        
+        let caps = caps.unwrap();
+        let caps_operation = caps.get(0).unwrap().as_str();
+        let left_number: i128 = caps.get(1).unwrap().as_str().parse().unwrap();
+        let right_number: i128 = caps.get(2).unwrap().as_str().parse().unwrap();
+        let result = match operator {
+            "*" => left_number * right_number,
+            "/" => left_number / right_number,
+            "+" => left_number + right_number,
+            "-" => left_number - right_number,
+            _ => 0
+        };
+        operation = operation.replace(caps_operation, &result.to_string());
+    }
+    return operation;
+}
+
 fn main() {
-    println!("Hello, world!");
+    let mut operation = String::new();
+    println!("Please, enter your operation:");
+    std::io::stdin().read_line(&mut operation).unwrap();
+
+    operation = resolve_operation(operation.clone(), "*");
+    operation = resolve_operation(operation.clone(), "/");
+    operation = resolve_operation(operation.clone(), "+");
+    operation = resolve_operation(operation.clone(), "-");
+
+    println!("Final result {operation}")
 }
